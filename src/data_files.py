@@ -7,9 +7,8 @@ had to accept files with any number of functions or rows, these fixed
 values would have to be replaced by a more general check.
 """
 import pandas as pd
-
-from src.exceptions import DataLoadError
-
+from sqlalchemy.exc import SQLAlchemyError
+from src.exceptions import DataLoadError, DatabaseError
 
 class DataFile:
     """Base class: read one CSV file and check its structure."""
@@ -58,6 +57,14 @@ class DataFile:
             if not pd.api.types.is_numeric_dtype(self.data[column]):
                 raise DataLoadError(
                     f"Column '{column}' in {self.path} contains non-numeric data")
+
+    
+    def save(self, engine, table_name):
+        """Write self.data into the SQLite table table_name, replacing an existing one."""
+        try:
+            self.data.to_sql(table_name, engine, index=False, if_exists="replace")
+        except SQLAlchemyError as err:
+            raise DatabaseError(f"Error occurred while saving data to table '{table_name}': {err}") from err
 
 
 class TrainingData(DataFile):

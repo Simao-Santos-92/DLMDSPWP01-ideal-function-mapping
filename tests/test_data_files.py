@@ -5,8 +5,11 @@ import os
 import tempfile
 import unittest
 
+import pandas as pd
+from sqlalchemy import create_engine
+
 from src.data_files import DataFile, TrainingData
-from src.exceptions import DataLoadError
+from src.exceptions import DataLoadError, DatabaseError
 
 
 class TinyData(DataFile):
@@ -71,6 +74,40 @@ class TestDataFile(unittest.TestCase):
         path = self.write_csv("x,y\n1.0,2.0\n2.0,abc\n3.0,4.0\n")
         with self.assertRaises(DataLoadError):
             TinyData(path).load()
+
+
+class TestSave(unittest.TestCase):
+    """DataFile.save writes the loaded table into SQLite unchanged."""
+
+    def setUp(self):
+        self.engine = create_engine("sqlite://")
+
+    def test_training_table_has_task_pdf_shape(self):
+        training_data = TrainingData("data/train.csv")
+        training_data.load()
+        training_data.save(self.engine, "training_data")
+
+        table = pd.read_sql("SELECT * FROM training_data", self.engine)
+        self.assertEqual(len(table), 400)
+        self.assertEqual(len(table.columns), 5)
+
+    def test_second_save_replaces_table(self):
+        training_data = TrainingData("data/train.csv")
+        training_data.load()
+        training_data.save(self.engine, "training_data")
+        training_data.save(self.engine, "training_data")
+
+        table = pd.read_sql("SELECT * FROM training_data", self.engine)
+        self.assertEqual(len(table), 400)
+
+    def test_unwritable_database_raises_database_error(self):
+        training_data = TrainingData("data/train.csv")
+        training_data.load()
+        with tempfile.TemporaryDirectory() as tmp:
+            bad_path = os.path.join(tmp, "no_such_folder", "test.db")
+            bad_engine = create_engine(f"sqlite:///{bad_path}")
+            with self.assertRaises(DatabaseError):
+                training_data.save(bad_engine, "training_data") 
 
 
 if __name__ == "__main__":
