@@ -8,7 +8,7 @@ import unittest
 import pandas as pd
 from sqlalchemy import create_engine
 
-from src.data_files import DataFile, TrainingData
+from src.data_files import DataFile, TrainingData, TestData
 from src.exceptions import DataLoadError, DatabaseError
 
 
@@ -82,6 +82,9 @@ class TestSave(unittest.TestCase):
     def setUp(self):
         self.engine = create_engine("sqlite://")
 
+    def tearDown(self):
+        self.engine.dispose()
+
     def test_training_table_has_task_pdf_shape(self):
         training_data = TrainingData("data/train.csv")
         training_data.load()
@@ -108,6 +111,28 @@ class TestSave(unittest.TestCase):
             bad_engine = create_engine(f"sqlite:///{bad_path}")
             with self.assertRaises(DatabaseError):
                 training_data.save(bad_engine, "training_data") 
+
+
+class TestPoints(unittest.TestCase):
+    """TestData.points hands out the test points one line at a time, in file order."""
+
+    def test_real_file_gives_100_pairs(self):
+        """ This test was designed to check the specific values provided in the test.csv file. To ensure 
+            that other files would be compatible, this test would have to be updated"""
+        test_data = TestData("data/test.csv")
+        test_data.load()
+        pairs = list(test_data.points())
+        total_pairs = len(pairs)
+        self.assertEqual(total_pairs, 100)
+        self.assertEqual(pairs[0], (-13.1, -4494.98))  
+
+    def test_tiny_file_keeps_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "test.csv")
+            with open(path, "w") as f:
+                f.write("x,y\n1.0,2.0\n2.0,3.0\n3.0,4.0\n")
+            pairs = list(TestData(path).points())
+        self.assertEqual(pairs, [(1.0, 2.0), (2.0, 3.0), (3.0, 4.0)])
 
 
 if __name__ == "__main__":

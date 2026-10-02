@@ -6,6 +6,7 @@ a different structure is rejected with a DataLoadError. If the program
 had to accept files with any number of functions or rows, these fixed 
 values would have to be replaced by a more general check.
 """
+from PIL.ImImagePlugin import number
 import pandas as pd
 from sqlalchemy.exc import SQLAlchemyError
 from src.exceptions import DataLoadError, DatabaseError
@@ -80,6 +81,16 @@ class IdealFunctions(DataFile):
 
 
 class TestData(DataFile):
-    """test.csv: one hundred single x-y points (line-by-line reading follows in step 1.4)."""
+    """test.csv: one hundred single x-y points, handed out line by line by points()."""   
     expected_columns = ["x", "y"]
     expected_rows = 100
+
+    
+    def points(self):
+        """Read test.csv line by line and yield one (x, y) pair of floats per row.
+        load() should be called first, so the file has been checked.
+        """
+        for chunk in pd.read_csv(self.path, chunksize=1):
+            x = chunk.iloc[0]["x"]
+            y = chunk.iloc[0]["y"]
+            yield (float(x), float(y))
