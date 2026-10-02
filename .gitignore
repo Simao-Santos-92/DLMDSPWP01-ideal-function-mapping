@@ -219,3 +219,7 @@ __marimo__/
 
 #VS CODE
 .vscode/
+
+#Graphics Output and Sketchbook for quick manual tests
+output/*.html
+tests/Sketchbook.py
