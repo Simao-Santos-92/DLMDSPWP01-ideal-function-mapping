@@ -82,6 +82,9 @@ class TestSave(unittest.TestCase):
     def setUp(self):
         self.engine = create_engine("sqlite://")
 
+    def tearDown(self):
+        self.engine.dispose()
+
     def test_training_table_has_task_pdf_shape(self):
         training_data = TrainingData("data/train.csv")
         training_data.load()
