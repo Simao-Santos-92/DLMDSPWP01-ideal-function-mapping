@@ -41,5 +41,5 @@ Run the program from the repository folder:
 Run the unit tests from the repository folder:
 
 ```
-.venv\Scripts\python.exe -m unittest tests.test_tolerance -v
+.venv\Scripts\python.exe -m unittest discover -v
 ```
