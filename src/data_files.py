@@ -6,7 +6,6 @@ a different structure is rejected with a DataLoadError. If the program
 had to accept files with any number of functions or rows, these fixed 
 values would have to be replaced by a more general check.
 """
-from PIL.ImImagePlugin import number
 import pandas as pd
 from sqlalchemy.exc import SQLAlchemyError
 from src.exceptions import DataLoadError, DatabaseError
