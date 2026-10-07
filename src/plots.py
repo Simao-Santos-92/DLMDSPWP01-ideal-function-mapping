@@ -34,7 +34,7 @@ def plot_fits(training, ideal, chosen, path):
                   legend_label=f"training {train_col}")
         p.line(ideal["x"], ideal[ideal_col], line_width=2, color="darkorange",
                legend_label=f"ideal {ideal_col}")
-        p.legend.location = "top_left"
+        p.legend.location = "top_center"
         panels.append(p)
     _write(gridplot(panels, ncols=2), path, "Training data and chosen ideal functions")
 
@@ -58,7 +58,7 @@ def plot_bands(ideal, chosen, max_deviation, rows, unmatched, path):
                   marker="x", color="crimson", legend_label="unmatched test points")
         p.y_range.start = ideal[ideal_col].min() - 5 * threshold
         p.y_range.end = ideal[ideal_col].max() + 5 * threshold
-        p.legend.location = "top_left"
+        p.add_layout(p.legend[0], "right")      # outside the plot area, so it hides no point
         panels.append(p)
     _write(gridplot(panels, ncols=2), path, "Test-point mapping with the sqrt(2) band")
 
@@ -76,6 +76,10 @@ def plot_deviations(chosen, max_deviation, rows, path):
                   color="seagreen", legend_label="delta y")
         p.add_layout(Span(location=threshold, dimension="width", line_color="crimson",
                           line_dash="dashed", line_width=2))
+        x0 = matched[0][0] if matched else 0    # zero-length line at the Span, only for its legend entry
+        p.line([x0, x0], [threshold, threshold], line_color="crimson", line_dash="dashed",
+               line_width=2, legend_label="threshold")
+        p.add_layout(p.legend[0], "right")
         p.y_range.start = 0
         p.y_range.end = threshold * 1.2
         panels.append(p)
