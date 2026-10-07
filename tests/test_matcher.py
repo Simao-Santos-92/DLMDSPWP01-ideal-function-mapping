@@ -69,7 +69,7 @@ class TestMap(unittest.TestCase):
 
 
 class TestSaveMapping(unittest.TestCase):
-    """FunctionMatcher.save_mapping writes Table 3 with exactly the four columns of the task PDF."""
+    """FunctionMatcher.save_mapping writes the mapping table with exactly the four columns of the task PDF."""
 
     def setUp(self):
         self.engine = create_engine("sqlite://")
@@ -77,7 +77,7 @@ class TestSaveMapping(unittest.TestCase):
     def tearDown(self):
         self.engine.dispose()
 
-    def test_table_3_has_rows_and_four_columns(self):
+    def test_mapping_has_rows_and_four_columns(self):
         rows = [(1.0, 2.1, 0.3, 7), (2.0, 3.0, 0.4, 7), (2.0, 3.0, 0.6, 23)]    # worked example
         FunctionMatcher(training=None, ideal=None).save_mapping(self.engine, rows)
         table = pd.read_sql("SELECT * FROM mapping", self.engine)

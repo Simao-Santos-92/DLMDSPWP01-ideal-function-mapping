@@ -37,7 +37,7 @@ class FunctionMatcher:
     
     def map(self, points):
         """Assign each test point to every chosen ideal function it fits by the sqrt(2) rule.
-        Returns (rows, unmatched): rows are (x, y, delta_y, ideal_func_no) for Table 3,
+        Returns (rows, unmatched): rows are (x, y, delta_y, ideal_func_no) for the mapping table,
         one per match; unmatched are the points that fit no chosen function.
         """
         rows = []
@@ -62,7 +62,7 @@ class FunctionMatcher:
         return rows, unmatched
 
     def save_mapping(self, engine, rows, table_name="mapping"):
-        """Write the mapping rows into Table 3 (x, y, delta_y, ideal_func_no), replacing an existing one."""
+        """Write the rows into the table table_name (x, y, delta_y, ideal_func_no), replacing an existing one."""
         table = pd.DataFrame(rows, columns=["x", "y", "delta_y", "ideal_func_no"])
         try:
             table.to_sql(table_name, engine, index=False, if_exists="replace")
