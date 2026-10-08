@@ -1,7 +1,8 @@
 r"""
 Entry point of the program: loads the three CSV files, selects the four ideal
-functions, maps the test points, writes the SQLite database (Tables 1 to 3)
-and the three Bokeh plots, then prints a short summary.
+functions, maps the test points, writes the SQLite tables training_data,
+ideal_functions and mapping, creates the three Bokeh plots and prints a
+short summary.
 
 Run from the repository root:  .venv\Scripts\python.exe main.py
 """
@@ -22,7 +23,7 @@ DATABASE_FILE = "functions.db"
 
 
 def run(data_dir=DATA_DIR, output_dir=OUTPUT_DIR):
-    """Run the whole pipeline; return the matcher, the Table 3 rows and the unmatched points."""
+    """Run the whole pipeline; return the matcher, the mapping rows and the unmatched points."""
     engine = create_engine(f"sqlite:///{os.path.join(output_dir, DATABASE_FILE)}")
 
     training = TrainingData(os.path.join(data_dir, "train.csv"))
@@ -32,13 +33,13 @@ def run(data_dir=DATA_DIR, output_dir=OUTPUT_DIR):
     ideal.load()
     test_data.load()
 
-    training.save(engine, "training_data")      # Table 1
-    ideal.save(engine, "ideal_functions")       # Table 2
+    training.save(engine, "training_data")      # 5 columns: x, y1 to y4
+    ideal.save(engine, "ideal_functions")       # 51 columns: x, y1 to y50
 
     matcher = FunctionMatcher(training.data, ideal.data)
     matcher.select()
     rows, unmatched = matcher.map(test_data.points())
-    matcher.save_mapping(engine, rows)          # Table 3
+    matcher.save_mapping(engine, rows)          # table mapping, 4 columns
     engine.dispose()                            # database is complete before any plot (A5)
 
     plot_fits(training.data, ideal.data, matcher.chosen,
@@ -56,7 +57,7 @@ def print_summary(matcher, rows, unmatched):
     for train_col, ideal_col in matcher.chosen.items():
         print(f"  {train_col} -> {ideal_col}   largest deviation {matcher.max_deviation[train_col]:.4f}")
     matched_points = len({(row[0], row[1]) for row in rows})    # one point can have two rows (D2)
-    print(f"Rows in Table 3:           {len(rows)}")
+    print(f"Rows in mapping table:     {len(rows)}")
     print(f"Matched test points:       {matched_points}")
     print(f"Unmatched test points:     {len(unmatched)}")
     print(f"Smallest margin:           {matcher.smallest_margin:.3f}")
